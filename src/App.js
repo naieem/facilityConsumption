@@ -1,25 +1,30 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React from "react";
+import "./App.css";
+import Container from "@material-ui/core/Container";
+import LinearProgress from "@material-ui/core/LinearProgress";
+import Header from "./header";
+import Filter from "./filter/filter";
+import * as axios from 'axios';
+import Service from "./service";
+
+axios.defaults.headers.common['Content-Type'] = 'application/json';
+axios.defaults.headers.common['Authorization'] = 'Bearer LWgUxt7aMmyQuoEWUxlcUPbfUpRpVM';
 
 function App() {
+  const [spinnerStatus, setspinnerStatus] = React.useState(false);
+  Service.spinnerObservable.subscribe((decision)=>{
+    setspinnerStatus(decision);
+  });
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <React.Fragment>
+      <Container fixed>
+      {spinnerStatus && 
+      <LinearProgress color="secondary" />
+      }
+        <Header></Header>
+        <Filter></Filter>
+      </Container>
+    </React.Fragment>
   );
 }
 
