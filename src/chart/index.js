@@ -45,7 +45,7 @@ export default function Chart() {
    * subscribing for getting chart data
    */
   Service.charDataObservable.subscribe((info)=>{
-    debugger;
+    
     data.labels=info.labels;
     data.datasets[0].data=info.values;
     setChartData(data);
