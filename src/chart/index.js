@@ -11,12 +11,15 @@ const useStyles = makeStyles(theme => ({
 
 export default function Chart() {
   const classes = useStyles();
+  /**
+   * default demo data for initial load
+   */
   let data = {
-    labels: ["January", "February", "March", "April", "May", "June", "July"],
+    labels: [],
     datasets: [
       {
-        label: "Expense",
-        fill: false,
+        label: "Consumptions",
+        fill: true,
         lineTension: 0.5,
         backgroundColor: "rgba(75,192,192,0.4)",
         borderColor: "rgba(75,192,192,1)",
@@ -33,11 +36,14 @@ export default function Chart() {
         pointHoverBorderWidth: 2,
         pointRadius: 1,
         pointHitRadius: 10,
-        data: [65, 59, 80, 81, 56, 55, 40]
+        data: []
       }
     ]
   };
   let [chartData, setChartData] = React.useState(data);
+  /**
+   * subscribing for getting chart data
+   */
   Service.charDataObservable.subscribe((info)=>{
     debugger;
     data.labels=info.labels;
@@ -46,7 +52,9 @@ export default function Chart() {
   });
   return (
     <div className={classes.chatContainer}>
+    {chartData.labels.length > 0 && 
       <Line data={chartData} />
+    }
     </div>
   );
 }
