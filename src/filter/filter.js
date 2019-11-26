@@ -115,14 +115,9 @@ class Filter extends Component {
     const fDate = this.formatDate(fromDate); // formatting date according to api acceptance
     const tDate = this.formatDate(toDate); // formatting date according to api acceptance
     const consumptionData = await Service.getConsumptionData(facilityId,fDate,tDate,resolution);
-    if (consumptionData.status === 200) {
-      let chartData = this.generateChartData(
-        consumptionData.data.data.consumption
-      );
-      
-      Service.charDataObservable.next(chartData); // setting chart data
-      Service.spinnerObservable.next(false); // spinner off
-    }
+    let chartData = this.generateChartData(consumptionData);
+    Service.charDataObservable.next(chartData); // setting chart data
+    Service.spinnerObservable.next(false); // spinner off
     
   }
   /**
