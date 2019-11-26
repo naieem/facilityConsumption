@@ -60,23 +60,39 @@ const resolutionType = [
 class Filter extends Component {
   constructor(props) {
     super(props);
+    /**
+     * By default set the from address to 1 month back from current date
+     */
+    let currentDate = new Date();
+    currentDate.setMonth(currentDate.getMonth()-1);
     this.state = {
       resolution: "daily",
-      fromDate: new Date(),
+      fromDate: currentDate,
       toDate: new Date(),
       facilityId: "",
-      disableBtn:true
+      disableBtn: true
     };
   }
+  /**
+   * handling resolution dropdown
+   */
   handleChange = event => {
-    this.setState({
-      resolution: event.target.value
-    });
+    this.setState(
+      {
+        resolution: event.target.value
+      },
+      () => {
+        this.checksearchCriteria();
+      }
+    );
   };
   async componentDidMount() {
     await this.getFacilityId();
     this.getConsumptionData();
   }
+  /**
+   * getting facility id 
+   */
   getFacilityId() {
     return new Promise(async (resolve, reject) => {
       const facilityData = await axios.get(
@@ -95,25 +111,32 @@ class Filter extends Component {
       resolve(true);
     });
   }
+  /**
+   * getting all consumption data
+   */
   async getConsumptionData() {
     const { resolution, fromDate, toDate, facilityId } = this.state;
     Service.spinnerObservable.next(true);
-    const fDate = this.formatDate(fromDate);
-    const tDate = this.formatDate(toDate);
+    const fDate = this.formatDate(fromDate); // formatting date according to api acceptance
+    const tDate = this.formatDate(toDate); // formatting date according to api acceptance
     const consumptionData = await axios.get(
       `https://demo-api.greenely.com/v1/facility/${facilityId}/consumption?from=${fDate}&to=${tDate}&resolution=${resolution}`
     );
     if (consumptionData.status === 200) {
-      console.log(consumptionData);
       let chartData = this.generateChartData(
         consumptionData.data.data.consumption
       );
-      debugger;
-      Service.charDataObservable.next(chartData);
-      Service.spinnerObservable.next(false);
+      
+      Service.charDataObservable.next(chartData); // setting chart data
+      Service.spinnerObservable.next(false); // spinner off
     }
-    debugger;
+    
   }
+  /**
+   * formatting date as per api acceptance
+   * @param {*} date 
+   * @return year-month-day 
+   */
   formatDate(date) {
     let day = date.getDate() < 10 ? "0" + date.getDate() : date.getDate();
     let month =
@@ -122,23 +145,42 @@ class Filter extends Component {
         : date.getMonth() + 1;
     return date.getFullYear() + "-" + month + "-" + day;
   }
+  /**
+   * handles from date changing action
+   */
   handleFromDateChange = date => {
-    this.setState({
-      fromDate: date
-    },()=>{
-      this.checksearchCriteria();
-    });
+    this.setState(
+      {
+        fromDate: date
+      },
+      () => {
+        this.checksearchCriteria();
+      }
+    );
   };
+  /**
+   * handles to date changing action
+   */
   handleToDateChange = date => {
-    this.setState({
-      toDate: date
-    },()=>{
-      this.checksearchCriteria();
-    });
+    this.setState(
+      {
+        toDate: date
+      },
+      () => {
+        this.checksearchCriteria();
+      }
+    );
   };
+  /**
+   * handles search button click event
+   */
   searchConsumption = () => {
     this.getConsumptionData();
   };
+  /**
+   * generates chart data from api data
+   * @param {*} data 
+   */
   generateChartData(data) {
     const { resolution } = this.state;
     let info = {};
@@ -157,10 +199,14 @@ class Filter extends Component {
     }
     return info;
   }
+  /**
+   * generates monthly filtered data
+   * @param {*} data 
+   */
   generateMonthlyData(data) {
     let labels = [];
     let values = [];
-    debugger;
+    
     for (const key in data) {
       let date = new Date(data[key].localtime);
       let month = months[date.getMonth()];
@@ -172,10 +218,14 @@ class Filter extends Component {
       values: values
     };
   }
+  /**
+   * generates weekly filtered data
+   * @param {*} data 
+   */
   generateWeeklyData(data) {
     let labels = [];
     let values = [];
-    debugger;
+    
     for (const key in data) {
       labels.push(data[key].week_number);
       values.push(data[key].usage || 0);
@@ -185,10 +235,14 @@ class Filter extends Component {
       values: values
     };
   }
+  /**
+   * generates daily filtered data
+   * @param {*} data 
+   */
   generateDailyData(data) {
     let labels = [];
     let values = [];
-    debugger;
+    
     for (const key in data) {
       let date = new Date(data[key].localtime);
       let day = date.getDate();
@@ -200,18 +254,59 @@ class Filter extends Component {
       values: values
     };
   }
+  /**
+   * validation check on date change and dropdown change while searching
+   */
   checksearchCriteria() {
     const { resolution, fromDate, toDate } = this.state;
-    debugger;
-    if(toDate.getTime() > fromDate.getTime()){
-      this.setState({
-        disableBtn:false
-      });
+    this.setState({
+      disableBtn: true
+    });
+    let toDateTime = toDate.getTime();
+    let frmDateTime = fromDate.getTime();
+    if (toDateTime > frmDateTime) {
+      switch (resolution) {
+        case "daily":
+          this.searchButtonValidator(3, 1);
+          break;
+        case "weekly":
+          this.searchButtonValidator(3, 3);
+          break;
+        case "monthly":
+          this.searchButtonValidator(12, 12);
+          break;
+        default:
+          break;
+      }
+    }
+  }
+  /**
+   * generic function for validating button status
+   * @param {*} monthLimit
+   * @param {*} diffRangeInMonth 
+   */
+  searchButtonValidator(monthLimit, diffRangeInMonth) {
+    const { fromDate, toDate } = this.state;
+    let comparedDate = new Date();
+    comparedDate.setMonth(comparedDate.getMonth() - monthLimit);
+    let comparedDateTime = comparedDate.getTime();
+
+    let newFrmDate = new Date(fromDate.getTime());
+    let newToDate = new Date(toDate.getTime());
+    
+    let frmDateTime = newFrmDate.getTime();
+    if (frmDateTime >= comparedDateTime) {
+      newToDate.setMonth(newToDate.getMonth() - diffRangeInMonth);
+      if (frmDateTime >= newToDate.getTime()) {
+        this.setState({
+          disableBtn: false
+        });
+      }
     }
   }
   render() {
     const { classes } = this.props;
-    const { resolution, fromDate, toDate,disableBtn } = this.state;
+    const { resolution, fromDate, toDate, disableBtn } = this.state;
 
     return (
       <div>
@@ -244,6 +339,7 @@ class Filter extends Component {
             ))}
           </Select>
         </FormControl>
+        {/* search button */}
         <Button
           disabled={disableBtn}
           className={classes.searchBtn}
