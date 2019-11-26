@@ -30,6 +30,7 @@ So no one will get any data if the filter is not set.
 * Axios
 * Material UI
 * React Datepicker
+* Enzyme
 
 ## Available Scripts
 
@@ -46,3 +47,7 @@ Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
 The page will reload if you make edits.<br />
 You will also see any lint errors in the console.
+
+### `npm run test`
+
+To run test file.You can update test file 'App.test.js'
