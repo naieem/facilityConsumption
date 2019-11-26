@@ -6,7 +6,6 @@ import FormControl from "@material-ui/core/FormControl";
 import Select from "@material-ui/core/Select";
 import Button from "@material-ui/core/Button";
 import { withStyles } from "@material-ui/core/styles";
-import * as axios from "axios";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
@@ -95,20 +94,16 @@ class Filter extends Component {
    */
   getFacilityId() {
     return new Promise(async (resolve, reject) => {
-      const facilityData = await axios.get(
-        "https://demo-api.greenely.com/v1/facility"
-      );
-      if (
-        facilityData.status === 200 &&
-        facilityData.data.data &&
-        facilityData.data.data.length
-      ) {
+      const facilityId = await Service.getFacilityId();
+      
+      if (facilityId ) {
         this.setState({
-          facilityId: facilityData.data.data[0].id
+          facilityId: facilityId
         });
         Service.spinnerObservable.next(false);
-      }
-      resolve(true);
+        resolve(true);
+      }else
+      resolve(false);
     });
   }
   /**
@@ -119,9 +114,7 @@ class Filter extends Component {
     Service.spinnerObservable.next(true);
     const fDate = this.formatDate(fromDate); // formatting date according to api acceptance
     const tDate = this.formatDate(toDate); // formatting date according to api acceptance
-    const consumptionData = await axios.get(
-      `https://demo-api.greenely.com/v1/facility/${facilityId}/consumption?from=${fDate}&to=${tDate}&resolution=${resolution}`
-    );
+    const consumptionData = await Service.getConsumptionData(facilityId,fDate,tDate,resolution);
     if (consumptionData.status === 200) {
       let chartData = this.generateChartData(
         consumptionData.data.data.consumption
