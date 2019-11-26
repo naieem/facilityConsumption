@@ -6,7 +6,7 @@ import Header from "./header";
 import Filter from "./filter/filter";
 import * as axios from 'axios';
 import Service from "./service";
-
+import Chart from "./chart";
 axios.defaults.headers.common['Content-Type'] = 'application/json';
 axios.defaults.headers.common['Authorization'] = 'Bearer LWgUxt7aMmyQuoEWUxlcUPbfUpRpVM';
 
@@ -22,7 +22,8 @@ function App() {
       <LinearProgress color="secondary" />
       }
         <Header></Header>
-        <Filter></Filter>
+        <Filter></Filter>        
+        <Chart></Chart>
       </Container>
     </React.Fragment>
   );
