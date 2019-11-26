@@ -9,6 +9,7 @@ import App from "./App";
 import Filter from "./filter/filter";
 import FormControl from "@material-ui/core/FormControl";
 import Button from "@material-ui/core/Button";
+import Service from "./service/index";
 
 const wrapper = mount(<App />);
 
@@ -26,5 +27,13 @@ describe("<App />", () => {
   it("renders Three <FormControl /> component and 1 <Button />", () => {
     expect(wrapper.find(FormControl)).toHaveLength(3);
     expect(wrapper.find(Button)).toHaveLength(1);
+  });
+});
+
+describe("Api testing", () => {
+  it("getFacilityId should return with facility ID 684", async () => {
+    expect.assertions(1);
+    const facilityId = await Service.getFacilityId();
+    expect(facilityId).toEqual(684);
   });
 });
